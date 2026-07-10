@@ -1,6 +1,6 @@
 'use strict';
 const authService = require('./auth.service');
-const logger = require('../../utils/logger');
+const logger = require('../../utils/logger') ; 
 
 const REFRESH_COOKIE_NAME = 'refreshToken';
 const COOKIE_OPTIONS = {

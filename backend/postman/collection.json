@@ -1,0 +1,396 @@
+{
+  "info": {
+    "name": "KheloGully API v1",
+    "description": "Complete API collection for the KheloGully backend. Run in the order shown for a full end-to-end test.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "athleteId", "value": "" },
+    { "key": "resultId", "value": "" },
+    { "key": "batchId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "1. Register (PET)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/v1/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test PET User\",\n  \"phone\": \"+917001000001\",\n  \"password\": \"Password@123!\",\n  \"schoolOrRegion\": \"Test School\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('success true', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Login (Scout — mobile client)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "client_type", "value": "mobile" }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+919999000002\",\n  \"password\": \"Scout@KheloGully2024!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Has accessToken', () => pm.expect(json.data.accessToken).to.exist);",
+                  "pm.test('Has refreshToken in body (mobile)', () => pm.expect(json.data.refreshToken).to.exist);",
+                  "pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "pm.collectionVariables.set('tokenExpiry', Date.now() + 14 * 60 * 1000);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/auth/profile"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has user data', () => pm.expect(pm.response.json().data.user).to.exist);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Refresh Token (mobile)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "client_type", "value": "mobile" }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/refresh",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "pm.collectionVariables.set('tokenExpiry', Date.now() + 14 * 60 * 1000);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "client_type", "value": "mobile" }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/logout",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('accessToken', '');",
+                  "pm.collectionVariables.set('refreshToken', '');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "ERROR — Expired Token (401)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer expiredToken123" }],
+            "url": "{{baseUrl}}/api/v1/auth/profile"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('TOKEN_INVALID code', () => pm.expect(pm.response.json().error.code).to.be.oneOf(['TOKEN_INVALID', 'TOKEN_EXPIRED']));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Athletes",
+      "item": [
+        {
+          "name": "Create Athlete",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/athletes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rahul Verma\",\n  \"age\": 14,\n  \"gender\": \"male\",\n  \"guardianName\": \"Suresh Verma\",\n  \"village\": \"Karol Bagh\",\n  \"district\": \"Central Delhi\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('athleteId', json.data.athlete._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Athletes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/athletes?page=1&limit=10", "query": [{"key":"page","value":"1"},{"key":"limit","value":"10"}] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Has pagination', () => pm.expect(pm.response.json().pagination).to.exist);"] }
+            }
+          ]
+        },
+        {
+          "name": "Get Athlete by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/athletes/{{athleteId}}"
+          }
+        },
+        {
+          "name": "Update Athlete",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/athletes/{{athleteId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"age\": 15\n}" }
+          }
+        },
+        {
+          "name": "Delete Athlete (soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/athletes/{{athleteId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Results",
+      "item": [
+        {
+          "name": "Create Result",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/results",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"athleteId\": \"{{athleteId}}\",\n  \"testType\": \"speed_run\",\n  \"rawScore\": 7.2,\n  \"timestamp\": \"2024-01-15T10:30:00.000Z\",\n  \"deviceId\": \"device-001\",\n  \"faceMatchVerified\": true,\n  \"stabilityVerified\": true\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Has zScore', () => pm.expect(json.data.result.zScore).to.not.be.null);",
+                  "pm.test('Has percentile', () => pm.expect(json.data.result.percentile).to.not.be.null);",
+                  "pm.collectionVariables.set('resultId', json.data.result._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Result Score",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/results/{{resultId}}/score"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sync",
+      "item": [
+        {
+          "name": "Sync Batch (offline upload)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/sync/batch",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"batchId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"deviceId\": \"field-device-001\",\n  \"results\": [\n    {\n      \"athleteId\": \"{{athleteId}}\",\n      \"testType\": \"standing_jump\",\n      \"rawScore\": 145,\n      \"timestamp\": \"2024-01-15T09:00:00.000Z\",\n      \"deviceId\": \"field-device-001\",\n      \"faceMatchVerified\": true,\n      \"stabilityVerified\": true\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Has accepted/skipped/rejected', () => {",
+                  "  pm.expect(json.data.accepted).to.be.an('array');",
+                  "  pm.expect(json.data.skipped).to.be.an('array');",
+                  "  pm.expect(json.data.rejected).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "ERROR — Duplicate Batch (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/sync/batch",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"batchId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"deviceId\": \"field-device-001\",\n  \"results\": [\n    {\n      \"athleteId\": \"{{athleteId}}\",\n      \"testType\": \"standing_jump\",\n      \"rawScore\": 145,\n      \"timestamp\": \"2024-01-15T09:00:00.000Z\",\n      \"deviceId\": \"field-device-001\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status 409', () => pm.response.to.have.status(409));"] }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/dashboard/leaderboard?testType=speed_run&limit=10", "query": [{"key":"testType","value":"speed_run"},{"key":"limit","value":"10"}] }
+          }
+        },
+        {
+          "name": "Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/dashboard/stats"
+          }
+        },
+        {
+          "name": "Dashboard Athletes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/dashboard/athletes?page=1&limit=20", "query": [{"key":"page","value":"1"},{"key":"limit","value":"20"}] }
+          }
+        },
+        {
+          "name": "Heatmap",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/dashboard/heatmap"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Liveness",
+          "request": { "method": "GET", "url": "{{baseUrl}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "Readiness",
+          "request": { "method": "GET", "url": "{{baseUrl}}/ready" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200 or 503', () => pm.expect([200, 503]).to.include(pm.response.code));"] } }]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "baseUrl": "http://localhost:5000",
+  "accessToken": "",
+  "refreshToken": "",
+  "tokenExpiry": "",
+  "athleteId": "",
+  "resultId": "",
+  "batchId": ""
+}

@@ -23,7 +23,7 @@ const registerSchema = z.object({
     .min(8, 'Password must be at least 8 characters')
     .max(128, 'Password cannot exceed 128 characters'),
 
-  schoolOrRegion: z.string().trim().optional(),
+  schoolOrRegion: z.string().trim().transform(v => v.toLowerCase()).optional(),
 
   /**
    * userType controls the registration path:

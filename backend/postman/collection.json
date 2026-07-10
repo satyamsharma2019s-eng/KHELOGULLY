@@ -5,12 +5,30 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5000" },
-    { "key": "accessToken", "value": "" },
-    { "key": "refreshToken", "value": "" },
-    { "key": "athleteId", "value": "" },
-    { "key": "resultId", "value": "" },
-    { "key": "batchId", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "athleteId",
+      "value": ""
+    },
+    {
+      "key": "resultId",
+      "value": ""
+    },
+    {
+      "key": "batchId",
+      "value": ""
+    }
   ],
   "item": [
     {
@@ -20,7 +38,12 @@
           "name": "1. Register (PET)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/v1/auth/register",
             "body": {
               "mode": "raw",
@@ -44,8 +67,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "client_type", "value": "mobile" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "client_type",
+                "value": "mobile"
+              }
             ],
             "url": "{{baseUrl}}/api/v1/auth/login",
             "body": {
@@ -74,7 +103,12 @@
           "name": "3. Get Profile",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
             "url": "{{baseUrl}}/api/v1/auth/profile"
           },
           "event": [
@@ -94,8 +128,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "client_type", "value": "mobile" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "client_type",
+                "value": "mobile"
+              }
             ],
             "url": "{{baseUrl}}/api/v1/auth/refresh",
             "body": {
@@ -123,9 +163,18 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "client_type", "value": "mobile" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "client_type",
+                "value": "mobile"
+              }
             ],
             "url": "{{baseUrl}}/api/v1/auth/logout",
             "body": {
@@ -150,7 +199,12 @@
           "name": "ERROR — Expired Token (401)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer expiredToken123" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer expiredToken123"
+              }
+            ],
             "url": "{{baseUrl}}/api/v1/auth/profile"
           },
           "event": [
@@ -175,8 +229,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": "{{baseUrl}}/api/v1/athletes",
             "body": {
@@ -201,13 +261,35 @@
           "name": "List Athletes",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/api/v1/athletes?page=1&limit=10", "query": [{"key":"page","value":"1"},{"key":"limit","value":"10"}] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/athletes?page=1&limit=10",
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
           },
           "event": [
             {
               "listen": "test",
-              "script": { "exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Has pagination', () => pm.expect(pm.response.json().pagination).to.exist);"] }
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has pagination', () => pm.expect(pm.response.json().pagination).to.exist);"
+                ]
+              }
             }
           ]
         },
@@ -215,7 +297,12 @@
           "name": "Get Athlete by ID",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
             "url": "{{baseUrl}}/api/v1/athletes/{{athleteId}}"
           }
         },
@@ -224,18 +311,32 @@
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": "{{baseUrl}}/api/v1/athletes/{{athleteId}}",
-            "body": { "mode": "raw", "raw": "{\n  \"age\": 15\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 15\n}"
+            }
           }
         },
         {
           "name": "Delete Athlete (soft)",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
             "url": "{{baseUrl}}/api/v1/athletes/{{athleteId}}"
           }
         }
@@ -249,8 +350,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": "{{baseUrl}}/api/v1/results",
             "body": {
@@ -277,7 +384,12 @@
           "name": "Get Result Score",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
             "url": "{{baseUrl}}/api/v1/results/{{resultId}}/score"
           }
         }
@@ -291,8 +403,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": "{{baseUrl}}/api/v1/sync/batch",
             "body": {
@@ -322,8 +440,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": "{{baseUrl}}/api/v1/sync/batch",
             "body": {
@@ -334,7 +458,11 @@
           "event": [
             {
               "listen": "test",
-              "script": { "exec": ["pm.test('Status 409', () => pm.response.to.have.status(409));"] }
+              "script": {
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
             }
           ]
         }
@@ -347,15 +475,37 @@
           "name": "Leaderboard",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/api/v1/dashboard/leaderboard?testType=speed_run&limit=10", "query": [{"key":"testType","value":"speed_run"},{"key":"limit","value":"10"}] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/dashboard/leaderboard?testType=speed_run&limit=10",
+              "query": [
+                {
+                  "key": "testType",
+                  "value": "speed_run"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
           }
         },
         {
           "name": "Stats",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
             "url": "{{baseUrl}}/api/v1/dashboard/stats"
           }
         },
@@ -363,15 +513,37 @@
           "name": "Dashboard Athletes",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/api/v1/dashboard/athletes?page=1&limit=20", "query": [{"key":"page","value":"1"},{"key":"limit","value":"20"}] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/dashboard/athletes?page=1&limit=20",
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
           }
         },
         {
           "name": "Heatmap",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
             "url": "{{baseUrl}}/api/v1/dashboard/heatmap"
           }
         }
@@ -382,13 +554,191 @@
       "item": [
         {
           "name": "Liveness",
-          "request": { "method": "GET", "url": "{{baseUrl}}/health" },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"] } }]
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Readiness",
-          "request": { "method": "GET", "url": "{{baseUrl}}/ready" },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200 or 503', () => pm.expect([200, 503]).to.include(pm.response.code));"] } }]
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/ready"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 503', () => pm.expect([200, 503]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Student & Teacher Flows",
+      "item": [
+        {
+          "name": "1. Student Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Student\",\n  \"phone\": \"+918001000001\",\n  \"password\": \"Password@123!\",\n  \"userType\": \"student\",\n  \"age\": 15,\n  \"gender\": \"male\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('studentPhone', JSON.parse(pm.request.body.raw).phone);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Student Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+918001000001\",\n  \"password\": \"Password@123!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('studentToken', pm.response.json().data.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Student Enroll (School A)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/enrollments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schoolOrRegion\": \"School A\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Duplicate Enroll (School A) - 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/enrollments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schoolOrRegion\": \"School A\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12. Student Enroll (School B) - 201 (Multi-school D3)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/enrollments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schoolOrRegion\": \"School B\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
         }
       ]
     }

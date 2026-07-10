@@ -10,7 +10,8 @@ const enrollSchema = z.object({
     .string({ required_error: 'schoolOrRegion is required' })
     .trim()
     .min(2, 'schoolOrRegion must be at least 2 characters')
-    .max(100),
+    .max(100)
+    .transform(v => v.toLowerCase()),
 
   // Optional: link to a specific teacher by their phone or ID
   teacherId: z

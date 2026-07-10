@@ -202,6 +202,7 @@ async function login({ phone, password }, env) {
     _id: user._id.toString(),
     role: user.role,
     schoolOrRegion: user.schoolOrRegion,
+    studentProfileId: user.studentProfileId ? user.studentProfileId.toString() : null,
   };
 
   const accessToken = signAccessToken(accessTokenPayload, env);
@@ -273,6 +274,7 @@ async function refreshTokens(rawToken, env) {
     _id: matchedUser._id.toString(),
     role: matchedUser.role,
     schoolOrRegion: matchedUser.schoolOrRegion,
+    studentProfileId: matchedUser.studentProfileId ? matchedUser.studentProfileId.toString() : null,
   };
 
   const accessToken = signAccessToken(accessTokenPayload, env);

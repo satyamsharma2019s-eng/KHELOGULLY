@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #EFEEE7;
+  color: #16213D;
+}
+
+/* Signature element: lane divider — echoes running-track lane markings.
+   Used between dashboard sections instead of a plain <hr>. */
+.lane-divider {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 6px;
+  margin: 2rem 0;
+}
+.lane-divider span {
+  flex: 1;
+  height: 2px;
+  background-color: #D9D4C8;
+}
+.lane-divider span:nth-child(3n) {
+  background-image: linear-gradient(to right, #D9D4C8 60%, transparent 40%);
+  background-size: 8px 2px;
+  background-color: transparent;
+}
+
+/* Focus visibility */
+:focus-visible {
+  outline: 2px solid #E8A33D;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

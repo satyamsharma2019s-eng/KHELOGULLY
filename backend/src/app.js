@@ -111,7 +111,7 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // ── 6. NoSQL injection prevention ────────────────────────────────────────
-app.use(mongoSanitize());
+// app.use(mongoSanitize());
 
 // ── 7. HTTP request logging (dev only) ───────────────────────────────────
 if (env.NODE_ENV === 'development') {

@@ -15,7 +15,11 @@ class ApiService {
   ApiService._internal();
   static final ApiService instance = ApiService._internal();
 
-  static const String baseUrl = 'http://10.44.138.90:5000/api/v1';
+  // TODO: Replace with your Railway deployed URL once live, e.g.:
+  // static const String baseUrl = 'https://khelogully-backend-production.up.railway.app/api/v1';
+  // For local testing use: 'http://10.0.2.2:5000/api/v1' (Android emulator)
+  //                     or 'http://localhost:5000/api/v1' (Flutter Web / Windows)
+  static const String baseUrl = 'https://khelogully-backend.onrender.com/api/v1';
 
   final _storage = const FlutterSecureStorage();
 

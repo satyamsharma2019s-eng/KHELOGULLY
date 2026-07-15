@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../services/api_service.dart';
+import 'login_screen.dart';
 
 class StudentRegistrationScreen extends StatefulWidget {
   const StudentRegistrationScreen({super.key});
@@ -18,11 +20,16 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
   final _villageController = TextEditingController();
   final _districtController = TextEditingController();
 
-  String? _selectedGender;
+  String? _selectedGender; // stored as 'male' | 'female' | 'other' (backend enum)
   bool _isLoading = false;
   bool _obscurePassword = true;
 
-  final List<String> _genderOptions = ['Male', 'Female', 'Other'];
+  // Display label -> backend value
+  final Map<String, String> _genderOptions = {
+    'Male': 'male',
+    'Female': 'female',
+    'Other': 'other',
+  };
 
   @override
   void dispose() {
@@ -47,25 +54,52 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
 
     setState(() => _isLoading = true);
 
-    // TODO: wire this to POST /auth/register with role: "student"
-    // Fields to send: name, phone, password, age, gender,
-    // guardianName (optional), village (optional), district (optional)
-    // client_type: mobile header required
-    // On success -> response includes athleteProfile, store it directly,
-    // don't re-fetch it separately.
-    await Future.delayed(const Duration(seconds: 1)); // placeholder
+    try {
+      final response = await ApiService.instance.post('/auth/register', body: {
+        'userType': 'student',
+        'name': _nameController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'password': _passwordController.text,
+        'age': int.parse(_ageController.text.trim()),
+        'gender': _selectedGender,
+        if (_guardianController.text.trim().isNotEmpty)
+          'guardianName': _guardianController.text.trim(),
+        if (_villageController.text.trim().isNotEmpty)
+          'village': _villageController.text.trim(),
+        if (_districtController.text.trim().isNotEmpty)
+          'district': _districtController.text.trim(),
+      });
 
-    setState(() => _isLoading = false);
+      // Register does NOT return tokens — data = { user, athleteProfile, enrollment }
+      ApiService.instance.unwrap(response);
 
-    // TODO: navigate to Student home screen on success
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registered! Please log in.')),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => LoginScreen(prefilledPhone: _phoneController.text.trim()),
+        ),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Network error: $e')),
+      );
+    }
+
+    if (mounted) setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Student Registration'),
-      ),
+      appBar: AppBar(title: const Text('Student Registration')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -74,10 +108,7 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Create your Student account',
-                  style: AppTextStyles.heading2,
-                ),
+                const Text('Create your Student account', style: AppTextStyles.heading2),
                 const SizedBox(height: AppSpacing.xs + 2),
                 const Text(
                   'Track your fitness scores and join programs in your region',
@@ -91,8 +122,8 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
                   controller: _nameController,
                   decoration: const InputDecoration(hintText: 'Enter your full name'),
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Name is required';
+                    if (value == null || value.trim().length < 2) {
+                      return 'Name must be at least 2 characters';
                     }
                     return null;
                   },
@@ -104,13 +135,14 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(hintText: 'Enter your phone number'),
+                  decoration: const InputDecoration(hintText: 'e.g. +919876543210'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Phone number is required';
                     }
-                    if (value.trim().length < 10) {
-                      return 'Enter a valid phone number';
+                    // Backend regex: ^\+?[0-9]{7,15}$
+                    if (!RegExp(r'^\+?[0-9]{7,15}$').hasMatch(value.trim())) {
+                      return 'Enter a valid phone number (7-15 digits)';
                     }
                     return null;
                   },
@@ -123,7 +155,7 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    hintText: 'Create a password',
+                    hintText: 'Create a password (min 8 characters)',
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
@@ -140,8 +172,8 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Password is required';
                     }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
+                    if (value.length < 8) {
+                      return 'Password must be at least 8 characters';
                     }
                     return null;
                   },
@@ -159,12 +191,8 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
                       return 'Age is required';
                     }
                     final age = int.tryParse(value.trim());
-                    if (age == null) {
-                      return 'Enter a valid number';
-                    }
-                    if (age < 5 || age > 25) {
-                      return 'Age must be between 5 and 25';
-                    }
+                    if (age == null) return 'Enter a valid number';
+                    if (age < 5 || age > 25) return 'Age must be between 5 and 25';
                     return null;
                   },
                 ),
@@ -175,8 +203,11 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: _selectedGender,
                   decoration: const InputDecoration(hintText: 'Select gender'),
-                  items: _genderOptions.map((gender) {
-                    return DropdownMenuItem(value: gender, child: Text(gender));
+                  items: _genderOptions.entries.map((entry) {
+                    return DropdownMenuItem(
+                      value: entry.value,
+                      child: Text(entry.key),
+                    );
                   }).toList(),
                   onChanged: (value) {
                     setState(() => _selectedGender = value);

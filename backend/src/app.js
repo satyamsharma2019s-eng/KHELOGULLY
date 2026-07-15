@@ -91,8 +91,8 @@ const allowedOrigins = env.CORS_ORIGINS.split(',').map((o) => o.trim());
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow requests with no origin (e.g. mobile apps, Postman)
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (e.g. mobile apps, Postman) or any localhost port for Flutter Web
+      if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
         return callback(null, true);
       }
       return callback(new Error(`CORS: Origin ${origin} not allowed`));

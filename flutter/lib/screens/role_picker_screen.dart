@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import 'pet_registration_screen.dart';
 import 'student_registration_screen.dart';
 import 'teacher_registration_screen.dart';
+import 'login_screen.dart';
 
 class RolePickerScreen extends StatelessWidget {
   const RolePickerScreen({super.key});
@@ -28,11 +29,7 @@ class RolePickerScreen extends StatelessWidget {
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(AppRadius.lg - 2),
                     ),
-                    child: const Icon(
-                      Icons.sports_gymnastics,
-                      color: Colors.white,
-                      size: 28,
-                    ),
+                    child: const Icon(Icons.sports_gymnastics, color: Colors.white, size: 28),
                   ),
                   const SizedBox(width: AppSpacing.md - 4),
                   const Text('KheloGully', style: AppTextStyles.heading1),
@@ -41,10 +38,7 @@ class RolePickerScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.xxl),
               const Text('Who are you?', style: AppTextStyles.heading2),
               const SizedBox(height: AppSpacing.xs + 2),
-              const Text(
-                'Select your role to get started',
-                style: AppTextStyles.subtitle,
-              ),
+              const Text('Select your role to get started', style: AppTextStyles.subtitle),
               const SizedBox(height: AppSpacing.xl),
               Expanded(
                 child: ListView(
@@ -52,15 +46,12 @@ class RolePickerScreen extends StatelessWidget {
                     _RoleCard(
                       icon: Icons.groups_rounded,
                       title: 'PET (School Mode)',
-                      subtitle:
-                          'Register and run tests for multiple students offline',
+                      subtitle: 'Register and run tests for multiple students offline',
                       color: AppColors.rolePet,
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const PetRegistrationScreen(),
-                          ),
+                          MaterialPageRoute(builder: (context) => const PetRegistrationScreen()),
                         );
                       },
                     ),
@@ -74,8 +65,7 @@ class RolePickerScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const StudentRegistrationScreen(),
-                          ),
+                              builder: (context) => const StudentRegistrationScreen()),
                         );
                       },
                     ),
@@ -89,12 +79,22 @@ class RolePickerScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const TeacherRegistrationScreen(),
-                          ),
+                              builder: (context) => const TeacherRegistrationScreen()),
                         );
                       },
                     ),
                   ],
+                ),
+              ),
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    );
+                  },
+                  child: const Text('Already have an account? Log in'),
                 ),
               ),
             ],
@@ -155,10 +155,7 @@ class _RoleCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textSecondary,
-              ),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
             ],
           ),
         ),

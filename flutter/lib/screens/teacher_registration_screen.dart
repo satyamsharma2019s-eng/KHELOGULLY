@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../services/api_service.dart';
+import 'login_screen.dart';
 
 class TeacherRegistrationScreen extends StatefulWidget {
   const TeacherRegistrationScreen({super.key});
@@ -32,23 +34,46 @@ class _TeacherRegistrationScreenState extends State<TeacherRegistrationScreen> {
 
     setState(() => _isLoading = true);
 
-    // TODO: wire this to POST /auth/register with role: "teacher"
-    // Fields to send: name, phone, password, schoolOrRegion (free text —
-    // backend normalizes casing/trimming, no need to match exactly here)
-    // client_type: mobile header required
-    await Future.delayed(const Duration(seconds: 1)); // placeholder
+    try {
+      final response = await ApiService.instance.post('/auth/register', body: {
+        'userType': 'teacher',
+        'name': _nameController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'password': _passwordController.text,
+        // Backend lowercases this server-side, no need to normalize here
+        'schoolOrRegion': _schoolOrRegionController.text.trim(),
+      });
 
-    setState(() => _isLoading = false);
+      // Register does NOT return tokens — data = { user }
+      ApiService.instance.unwrap(response);
 
-    // TODO: navigate to Teacher home screen on success
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registered! Please log in.')),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => LoginScreen(prefilledPhone: _phoneController.text.trim()),
+        ),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Network error: $e')),
+      );
+    }
+
+    if (mounted) setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Teacher Registration'),
-      ),
+      appBar: AppBar(title: const Text('Teacher Registration')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -57,10 +82,7 @@ class _TeacherRegistrationScreenState extends State<TeacherRegistrationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Create your Teacher account',
-                  style: AppTextStyles.heading2,
-                ),
+                const Text('Create your Teacher account', style: AppTextStyles.heading2),
                 const SizedBox(height: AppSpacing.xs + 2),
                 const Text(
                   'You\'ll be able to view your school\'s enrolled students and submit their test results',
@@ -74,8 +96,8 @@ class _TeacherRegistrationScreenState extends State<TeacherRegistrationScreen> {
                   controller: _nameController,
                   decoration: const InputDecoration(hintText: 'Enter your full name'),
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Name is required';
+                    if (value == null || value.trim().length < 2) {
+                      return 'Name must be at least 2 characters';
                     }
                     return null;
                   },
@@ -87,13 +109,13 @@ class _TeacherRegistrationScreenState extends State<TeacherRegistrationScreen> {
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(hintText: 'Enter your phone number'),
+                  decoration: const InputDecoration(hintText: 'e.g. +919876543210'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Phone number is required';
                     }
-                    if (value.trim().length < 10) {
-                      return 'Enter a valid phone number';
+                    if (!RegExp(r'^\+?[0-9]{7,15}$').hasMatch(value.trim())) {
+                      return 'Enter a valid phone number (7-15 digits)';
                     }
                     return null;
                   },
@@ -106,7 +128,7 @@ class _TeacherRegistrationScreenState extends State<TeacherRegistrationScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    hintText: 'Create a password',
+                    hintText: 'Create a password (min 8 characters)',
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
@@ -123,8 +145,8 @@ class _TeacherRegistrationScreenState extends State<TeacherRegistrationScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Password is required';
                     }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
+                    if (value.length < 8) {
+                      return 'Password must be at least 8 characters';
                     }
                     return null;
                   },
@@ -155,19 +177,12 @@ class _TeacherRegistrationScreenState extends State<TeacherRegistrationScreen> {
                   child: const Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.info_outline_rounded,
-                        size: 18,
-                        color: AppColors.roleTeacher,
-                      ),
+                      Icon(Icons.info_outline_rounded, size: 18, color: AppColors.roleTeacher),
                       SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
                           'Only students enrolled in this exact school/region will appear on your roster.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
+                          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                         ),
                       ),
                     ],

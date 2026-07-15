@@ -91,8 +91,12 @@ const allowedOrigins = env.CORS_ORIGINS.split(',').map((o) => o.trim());
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow requests with no origin (e.g. mobile apps, Postman) or any localhost port for Flutter Web
-      if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
+      // Allow: no origin (mobile apps, Postman), explicit allowed list,
+      // any localhost port (Flutter Web dev), Railway & Render preview URLs.
+      const isLocalhost = origin && origin.startsWith('http://localhost:');
+      const isRailway = origin && origin.endsWith('.up.railway.app');
+      const isRender = origin && origin.endsWith('.onrender.com');
+      if (!origin || allowedOrigins.includes(origin) || isLocalhost || isRailway || isRender) {
         return callback(null, true);
       }
       return callback(new Error(`CORS: Origin ${origin} not allowed`));

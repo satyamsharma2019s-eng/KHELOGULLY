@@ -6,20 +6,23 @@ class EnrollmentModel {
   final String id;
   final String schoolOrRegion;
   final DateTime enrolledAt;
+  final String status; // "active" | "inactive" — inactive means withdrawn
 
   EnrollmentModel({
     required this.id,
     required this.schoolOrRegion,
     required this.enrolledAt,
+    required this.status,
   });
 
   factory EnrollmentModel.fromJson(Map<String, dynamic> json) {
     return EnrollmentModel(
       id: json['_id'] ?? json['id'] ?? '',
       schoolOrRegion: json['schoolOrRegion'] ?? '',
-      enrolledAt: json['createdAt'] != null
-          ? DateTime.tryParse(json['createdAt']) ?? DateTime.now()
-          : DateTime.now(),
+      enrolledAt: json['enrolledAt'] != null
+    ? DateTime.tryParse(json['enrolledAt']) ?? DateTime.now()
+    : DateTime.now(),
+      status: json['status'] ?? 'active',
     );
   }
 }

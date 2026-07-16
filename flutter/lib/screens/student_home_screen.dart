@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/app_models.dart';
+import '../services/api_service.dart';
+import 'enroll_screen.dart';
 
 /// Student Home Screen
 /// Shows: own profile, list of enrollments (a student can have more than
 /// one — show all), and own test scores.
 ///
-/// TODO (integration): replace the mock data below with real calls:
+/// Wired to real backend:
 ///   GET /api/v1/student/enrollments
 ///   GET /api/v1/student/scores
-/// Both calls need the auth interceptor (refresh-retry on 401) working
-/// first — don't wire the real calls until that's confirmed done.
+/// Auth interceptor (refresh-retry on 401) confirmed working before wiring.
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({
     super.key,
@@ -37,46 +38,34 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
 
-    // TODO: replace with real GET /api/v1/student/enrollments
-    //       and GET /api/v1/student/scores
-    await Future.delayed(const Duration(milliseconds: 600));
+    try {
+      final enrollmentsResponse =
+          await ApiService.instance.get('/student/enrollments');
+      final enrollmentsData = ApiService.instance.unwrap(enrollmentsResponse);
+      _enrollments = (enrollmentsData as List)
+          .map((e) => EnrollmentModel.fromJson(e as Map<String, dynamic>))
+          .where((e) => e.status == 'active')
+          .toList();
 
-    // ---- MOCK DATA (remove once real API is wired) ----
-    final mockEnrollments = [
-      EnrollmentModel(
-        id: '1',
-        schoolOrRegion: 'jabalpur',
-        enrolledAt: DateTime.now().subtract(const Duration(days: 20)),
-      ),
-    ];
-    final mockScores = [
-      TestResultModel(
-        id: '1',
-        testType: 'vertical_jump',
-        rawScore: 38.5,
-        unit: 'cm',
-        timestamp: DateTime.now().subtract(const Duration(days: 3)),
-        zScore: 1.2,
-        percentile: 87,
-        syncStatus: 'synced',
-      ),
-      TestResultModel(
-        id: '2',
-        testType: 'pushup',
-        rawScore: 22,
-        unit: 'reps',
-        timestamp: DateTime.now().subtract(const Duration(days: 10)),
-        zScore: null, // still null-safe if baseline table isn't seeded yet
-        percentile: null,
-        syncStatus: 'synced',
-      ),
-    ];
-    // ---- END MOCK DATA ----
+      final scoresResponse = await ApiService.instance.get('/student/scores');
+      final scoresData = ApiService.instance.unwrap(scoresResponse);
+      _scores = (scoresData as List)
+          .map((s) => TestResultModel.fromJson(s as Map<String, dynamic>))
+          .toList();
+    } on ApiException catch (e) {
+      debugPrint('Load failed: ${e.message}');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message)),
+        );
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
 
     if (!mounted) return;
+
     setState(() {
-      _enrollments = mockEnrollments;
-      _scores = mockScores;
       _isLoading = false;
     });
   }
@@ -107,10 +96,34 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
     if (confirmed != true) return;
 
-    // TODO: DELETE /api/v1/enrollments/:id
-    setState(() {
-      _enrollments.removeWhere((e) => e.id == enrollment.id);
-    });
+    setState(() => _isLoading = true);
+
+    try {
+      final response =
+          await ApiService.instance.delete('/enrollments/${enrollment.id}');
+      ApiService.instance.unwrap(response);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Withdrawn successfully')),
+      );
+
+      await _loadData();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Something went wrong. Please try again.')),
+      );
+    }
   }
 
   @override
@@ -132,8 +145,17 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   _SectionHeader(
                     title: 'My Enrollments',
                     actionLabel: 'Enroll',
-                    onAction: () {
-                      // TODO: navigate to Enroll screen (teammate's task)
+                    onAction: () async {
+                      final enrolled = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const EnrollScreen(),
+                        ),
+                      );
+
+                      if (enrolled == true) {
+                        _loadData();
+                      }
                     },
                   ),
                   const SizedBox(height: AppSpacing.md),

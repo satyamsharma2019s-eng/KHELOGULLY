@@ -133,7 +133,7 @@ class ApiService {
 
   /// Helper: unwraps `{ success, data }` and throws a readable message
   /// on `{ success: false, error: { message } }`.
-  Map<String, dynamic> unwrap(http.Response response) {
+  dynamic unwrap(http.Response response) {
     final decoded = jsonDecode(response.body);
     if (decoded['success'] == true) {
       return decoded['data'];
